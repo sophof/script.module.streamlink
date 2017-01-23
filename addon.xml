@@ -8,7 +8,7 @@
     <import addon="script.module.requests" version="2.9.1"/>
     <import addon="script.module.singledispatch" version="3.4.0.3"/>
     <import addon="script.module.futures" version="2.2.0"/>
-    <import addon="script.module.pycryptodome" version="3.4.3"/
+    <import addon="script.module.pycryptodome" version="3.4.3"/>
   </requires>
   <extension point="xbmc.python.module"
              library="lib"/>
