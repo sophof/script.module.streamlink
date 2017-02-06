@@ -15,8 +15,8 @@ QUALITY_MAP = {
     0: "144p"
 }
 
-_url_re = re.compile("http(s)?://(\w+\.)?ardmediathek.de/tv")
-_media_id_re = re.compile("/play/config/(\d+)")
+_url_re = re.compile(r"http(s)?://(\w+\.)?ardmediathek.de/tv")
+_media_id_re = re.compile(r"/play/config/(\d+)")
 _media_schema = validate.Schema({
     "_mediaArray": [{
         "_mediaStreamArray": [{
@@ -126,5 +126,6 @@ class ard_mediathek(Plugin):
                 except IOError as err:
                     self.logger.error("Failed to extract {0} streams: {1}",
                                       parser_name, err)
+
 
 __plugin__ = ard_mediathek

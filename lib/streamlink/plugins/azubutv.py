@@ -21,7 +21,7 @@ HTTP_HEADERS = {
 
 }
 
-_url_re = re.compile("http(s)?://(\w+\.)?azubu.tv/(?P<domain>\w+)")
+_url_re = re.compile(r"http(s)?://(\w+\.)?azubu.tv/(?P<domain>\w+)")
 
 PARAMS_REGEX = r"(\w+)=({.+?}|\[.+?\]|\(.+?\)|'(?:[^'\\]|\\')*'|\"(?:[^\"\\]|\\\")*\"|\S+)"
 stream_video_url = "http://api.azubu.tv/public/channel/{}/player"
@@ -57,13 +57,13 @@ class AzubuTV(Plugin):
 
     def _get_stream_url(self, o):
 
-        match = _url_re.match(self.url);
-        channel = match.group('domain');
+        match = _url_re.match(self.url)
+        channel = match.group('domain')
 
         channel_info = requests.get(stream_video_url.format(channel))
         j = json.loads(channel_info.text)
 
-        if j["data"]["is_live"] != True:
+        if j["data"]["is_live"] is not True:
             return "", False
         else:
             is_live = True
@@ -75,7 +75,6 @@ class AzubuTV(Plugin):
 
         stream_url = t["sources"][0]["src"]
         return stream_url, is_live
-
 
     def _get_streams(self):
         hls_url, is_live = self._get_stream_url(self)
@@ -93,5 +92,6 @@ class AzubuTV(Plugin):
             raise PluginError(err)
 
         return streams
+
 
 __plugin__ = AzubuTV

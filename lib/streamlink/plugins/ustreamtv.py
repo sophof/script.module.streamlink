@@ -21,7 +21,7 @@ try:
 except ImportError:
     HAS_LIBRTMP = False
 
-_url_re = re.compile("""
+_url_re = re.compile(r"""
     http(s)?://(www\.)?ustream.tv
     (?:
         (/embed/|/channel/id/)(?P<channel_id>\d+)
@@ -30,7 +30,7 @@ _url_re = re.compile("""
         /recorded/(?P<video_id>\d+)
     )?
 """, re.VERBOSE)
-_channel_id_re = re.compile("\"channelId\":(\d+)")
+_channel_id_re = re.compile(r"\"channelId\":(\d+)")
 
 HLS_PLAYLIST_URL = (
     "http://iphone-streaming.ustream.tv"
@@ -91,7 +91,7 @@ _stream_schema = validate.Schema(
             }],
         )
     },
-    {
+        {
         "name": validate.text,
         "varnishUrl": validate.text
     })
@@ -422,7 +422,7 @@ class UStreamTV(Plugin):
 
     @classmethod
     def stream_weight(cls, stream):
-        match = re.match("mobile_(\w+)", stream)
+        match = re.match(r"mobile_(\w+)", stream)
         if match:
             weight, group = Plugin.stream_weight(match.group(1))
             weight -= 1
@@ -534,9 +534,9 @@ class UStreamTV(Plugin):
                                        self.url, provider_name,
                                        stream_index, password)
                 elif provider_url.startswith("rtmp"):
-                        playpath = stream_info["streamName"]
-                        stream = self._create_rtmp_stream(provider_url,
-                                                          playpath)
+                    playpath = stream_info["streamName"]
+                    stream = self._create_rtmp_stream(provider_url,
+                                                      playpath)
 
                 if stream:
                     streams[stream_name] = stream
@@ -622,5 +622,6 @@ class UStreamTV(Plugin):
         channel_id = match.group("channel_id") or self._get_channel_id()
         if channel_id:
             return self._get_live_streams(channel_id)
+
 
 __plugin__ = UStreamTV

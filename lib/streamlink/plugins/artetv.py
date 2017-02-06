@@ -7,23 +7,21 @@ from itertools import chain
 from streamlink.compat import urlparse
 from streamlink.plugin import Plugin
 from streamlink.plugin.api import http, validate
-from streamlink.stream import HLSStream, HTTPStream, RTMPStream
+from streamlink.stream import HDSStream, HLSStream, HTTPStream, RTMPStream
 
 SWF_URL = "http://www.arte.tv/player/v2/jwplayer6/mediaplayer.6.6.swf"
+JSON_VOD_URL = "https://api.arte.tv/api/player/v1/config/{}/{}"
+JSON_LIVE_URL = "https://api.arte.tv/api/player/v1/livestream/{}"
 
-_url_re = re.compile("http(s)?://(\w+\.)?arte.tv/")
-_json_re = re.compile("arte_vp_(?:live-)?url=(['\"])(.+?)\\1")
-
-_schema = validate.Schema(
-    validate.transform(_json_re.search),
-    validate.any(
-        None,
-        validate.all(
-            validate.get(2),
-            validate.url(scheme="http")
-        )
+_url_re = re.compile(r"""
+    https?://(?:\w+\.)?arte.tv/guide/
+    (?P<language>[a-z]{2})/
+    (?:
+        (?P<video_id>.+?)/.+ | # VOD
+        (?:direct|live)        # Live TV
     )
-)
+""", re.VERBOSE)
+
 _video_schema = validate.Schema({
     "videoJsonPlayer": {
         "VSR": validate.any(
@@ -65,6 +63,15 @@ class ArteTV(Plugin):
             else:
                 yield stream_name, HTTPStream(self.session, stream_url)
 
+        elif stream_type == "f4m":
+            try:
+                streams = HDSStream.parse_manifest(self.session, stream_url)
+
+                for stream in streams.items():
+                    yield stream
+            except IOError as err:
+                self.logger.error("Failed to extract HDS streams: {0}", err)
+
         elif stream_type == "rtmp":
             params = {
                 "rtmp": stream["streamer"],
@@ -82,10 +89,13 @@ class ArteTV(Plugin):
             yield stream_name, stream
 
     def _get_streams(self):
-        json_url = http.get(self.url, schema=_schema)
-        if not json_url:
-            return
-
+        match = _url_re.match(self.url)
+        language = match.group('language')
+        video_id = match.group('video_id')
+        if video_id is None:
+            json_url = JSON_LIVE_URL.format(language)
+        else:
+            json_url = JSON_VOD_URL.format(language, video_id)
         res = http.get(json_url)
         video = http.json(res, schema=_video_schema)
 
@@ -97,5 +107,6 @@ class ArteTV(Plugin):
         streams = (self._create_stream(stream, is_live) for stream in vsr)
 
         return chain.from_iterable(streams)
+
 
 __plugin__ = ArteTV

@@ -2,8 +2,10 @@ from __future__ import division
 
 import base64
 import hmac
+import random
 import re
 import os.path
+import string
 
 from binascii import unhexlify
 from collections import namedtuple
@@ -68,11 +70,15 @@ class HDSStreamWriter(SegmentedStreamWriter):
             return
 
         try:
+            request_params = self.stream.request_params.copy()
+            params = request_params.pop("params", {})
+            params.pop("g", None)
             return self.session.http.get(fragment.url,
                                          stream=True,
                                          timeout=self.timeout,
                                          exception=StreamError,
-                                         **self.stream.request_params)
+                                         params=params,
+                                         **request_params)
         except StreamError as err:
             self.logger.error("Failed to open fragment {0}-{1}: {2}",
                               fragment.segment, fragment.fragment, err)
@@ -258,7 +264,7 @@ class HDSStreamWorker(SegmentedStreamWorker):
                 # Check for the last fragment of the stream
                 if fragmentrun.discontinuity_indicator == 0:
                     if i > 0:
-                        prev = table[i-1]
+                        prev = table[i - 1]
                         self.end_fragment = prev.first_fragment
 
                     break
@@ -274,8 +280,8 @@ class HDSStreamWorker(SegmentedStreamWorker):
         table = self.segmentruntable.payload.segment_run_entry_table
 
         for segment, start, end in self.iter_segment_table(table):
-            if fragment >= (start + 1) and fragment <= (end + 1):
-                break
+            if start - 1 <= fragment <= end:
+                return segment
         else:
             segment = 1
 
@@ -427,6 +433,7 @@ class HDSStream(Stream):
                         from the stream before raising an error.
         :param pvswf: URL of player SWF for Akamai HD player verification.
         """
+        logger = session.logger.new_module("hls.parse_manifest")
 
         if not request_params:
             request_params = {}
@@ -442,10 +449,15 @@ class HDSStream(Stream):
 
         if "akamaihd" in url or is_akamai:
             request_params["params"]["hdcore"] = HDCORE_VERSION
+            request_params["params"]["g"] = cls.cache_buster_string(12)
 
         res = session.http.get(url, exception=IOError, **request_params)
         manifest = session.http.xml(res, "manifest XML", ignore_ns=True,
                                     exception=IOError)
+
+        if manifest.findtext("drmAdditionalHeader"):
+            logger.debug("Omitting HDS stream protected by DRM: {}", url)
+            return {}
 
         parsed = urlparse(url)
         baseurl = manifest.findtext("baseURL")
@@ -586,3 +598,7 @@ class HDSStream(Stream):
         params.extend(parse_qsl(hdntl, keep_blank_values=True))
 
         return params
+
+    @staticmethod
+    def cache_buster_string(length):
+        return "".join([random.choice(string.ascii_uppercase) for i in range(length)])

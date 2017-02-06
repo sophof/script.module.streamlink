@@ -15,6 +15,7 @@ class BigoStream(Stream):
     The stream is started by sending the uid and sid as little-endian unsigned longs
     after connecting to the server. The video stream is FLV.
     """
+
     def __init__(self, session, sid, uid, ip, port):
         super(BigoStream, self).__init__(session)
         try:
@@ -65,5 +66,6 @@ class Bigo(Plugin):
 
         sid, uid, ip, port = flashvars.groups()
         yield "live", BigoStream(self.session, sid, uid, ip, port)
+
 
 __plugin__ = Bigo

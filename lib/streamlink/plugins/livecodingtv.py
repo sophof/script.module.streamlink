@@ -14,7 +14,7 @@ _streams_re = re.compile(r"""
         )".*?
      type:\s+"(.*?)"                            # which stream type it is
      """, re.M | re.DOTALL | re.VERBOSE)
-_url_re = re.compile(r"http(s)?://(?:\w+\.)?livecoding\.tv")
+_url_re = re.compile(r"http(s)?://(?:\w+\.)?(livecoding|liveedu)\.tv")
 
 
 class LivecodingTV(Plugin):
@@ -38,5 +38,6 @@ class LivecodingTV(Plugin):
                     yield s
             elif stream_type == "video/mp4":
                 yield 'vod', HTTPStream(self.session, url)
+
 
 __plugin__ = LivecodingTV

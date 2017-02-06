@@ -7,9 +7,9 @@ from streamlink.stream import HLSStream
 LOGIN_PAGE_URL = "http://www.livestation.com/en/users/new"
 LOGIN_POST_URL = "http://www.livestation.com/en/sessions.json"
 
-_csrf_token_re = re.compile("<meta content=\"([^\"]+)\" name=\"csrf-token\"")
-_hls_playlist_re = re.compile("<meta content=\"([^\"]+.m3u8)\" property=\"og:video\" />")
-_url_re = re.compile("http(s)?://(\w+\.)?livestation.com")
+_csrf_token_re = re.compile(r"<meta content=\"([^\"]+)\" name=\"csrf-token\"")
+_hls_playlist_re = re.compile(r"<meta content=\"([^\"]+.m3u8)\" property=\"og:video\" />")
+_url_re = re.compile(r"http(s)?://(\w+\.)?livestation.com")
 
 _csrf_token_schema = validate.Schema(
     validate.transform(_csrf_token_re.search),
@@ -58,7 +58,7 @@ class Livestation(Plugin):
             "plan_id": "",
             "session[email]": email,
             "session[password]": password,
-            "utf8": "\xE2\x9C\x93", # Check Mark Character
+            "utf8": "\xE2\x9C\x93",  # Check Mark Character
         }
 
         res = http.post(LOGIN_POST_URL, data=data, acceptable_status=(200, 422))
@@ -85,4 +85,3 @@ class Livestation(Plugin):
 
 
 __plugin__ = Livestation
-

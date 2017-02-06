@@ -2,7 +2,7 @@ from streamlink.compat import urlparse
 from streamlink.exceptions import PluginError
 from streamlink.plugin import Plugin
 from streamlink.stream import (AkamaiHDStream, HDSStream, HLSStream,
-                                 HTTPStream, RTMPStream)
+                               HTTPStream, RTMPStream)
 
 import ast
 import re
@@ -20,6 +20,8 @@ PROTOCOL_MAP = {
     "rtmpte": RTMPStream
 }
 PARAMS_REGEX = r"(\w+)=({.+?}|\[.+?\]|\(.+?\)|'(?:[^'\\]|\\')*'|\"(?:[^\"\\]|\\\")*\"|\S+)"
+SCHEME_REGEX = re.compile(r"^\w+://(.+)")
+
 
 class StreamURL(Plugin):
     @classmethod
@@ -51,10 +53,10 @@ class StreamURL(Plugin):
 
         split = self.url.split(" ")
         url = split[0]
-        urlnoproto = re.match("^\w+://(.+)", url).group(1)
+        urlnoproto = SCHEME_REGEX.match(url).group(1)
 
         # Prepend http:// if needed.
-        if cls != RTMPStream and not len(urlparse(urlnoproto).scheme):
+        if cls != RTMPStream and not SCHEME_REGEX.match(urlnoproto):
             urlnoproto = "http://{0}".format(urlnoproto)
 
         params = (" ").join(split[1:])

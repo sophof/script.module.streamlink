@@ -11,18 +11,18 @@ CHANNEL_INFO_URL = "http://api.plu.cn/tga/streams/%s"
 QQ_STREAM_INFO_URL = "http://info.zb.qq.com/?cnlid=%d&cmd=2&stream=%d&system=1&sdtfrom=113"
 PLU_STREAM_INFO_URL = "http://star.api.plu.cn/live/GetLiveUrl?roomId=%d"
 
-_quality_re = re.compile("\d+x(\d+)$")
-_url_re = re.compile("http://star\.longzhu\.(?:tv|com)/(m\/)?(?P<domain>[a-z0-9]+)")
+_quality_re = re.compile(r"\d+x(\d+)$")
+_url_re = re.compile(r"http://star\.longzhu\.(?:tv|com)/(m\/)?(?P<domain>[a-z0-9]+)")
 
 _channel_schema = validate.Schema(
     {
-        "data" : validate.any(None, {
-            "channel" : validate.any(None, {
-                "id" : validate.all(
+        "data": validate.any(None, {
+            "channel": validate.any(None, {
+                "id": validate.all(
                     validate.text,
                     validate.transform(int)
                 ),
-                "vid" : int
+                "vid": int
             })
         })
     },
@@ -50,6 +50,7 @@ STREAM_WEIGHTS = {
     "middle": 540,
     "source": 1080
 }
+
 
 class Tga(Plugin):
     @classmethod
@@ -98,19 +99,20 @@ class Tga(Plugin):
                 yield quality, HTTPStream(self.session, source["securityUrl"])
             elif source["ext"] == "rtmp":
                 yield quality, RTMPStream(self.session, {
-                    "rtmp":source["securityUrl"],
-                    "live":True
+                    "rtmp": source["securityUrl"],
+                    "live": True
                 })
 
     def _get_streams(self):
-        match = _url_re.match(self.url);
+        match = _url_re.match(self.url)
         domain = match.group('domain')
-        
-        vid, cid = self._get_channel_id(domain);
+
+        vid, cid = self._get_channel_id(domain)
 
         if vid != 0:
             return self._get_qq_streams(vid)
         elif cid != 0:
             return self._get_plu_streams(cid)
+
 
 __plugin__ = Tga

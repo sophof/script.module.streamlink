@@ -24,7 +24,7 @@ STREAMING_TYPES = {
     )
 }
 
-_url_re = re.compile("""
+_url_re = re.compile(r"""
     http(s)?://(\w+\.)?zdf.de/
 """, re.VERBOSE | re.IGNORECASE)
 
@@ -62,6 +62,7 @@ _schema = validate.Schema(
         ]
     }
 )
+
 
 class zdf_mediathek(Plugin):
     @classmethod
@@ -103,7 +104,6 @@ class zdf_mediathek(Plugin):
                 qualities.update(option)
 
         return qualities
-            
 
     def _get_streams(self):
         match = _url_re.match(self.url)
@@ -112,7 +112,7 @@ class zdf_mediathek(Plugin):
             title = title[:-5]
 
         request_url = "https://api.zdf.de/content/documents/%s.json?profile=player" % title
-        res = http.get(request_url, headers={"Api-Auth" : "Bearer d2726b6c8c655e42b68b0db26131b15b22bd1a32"})
+        res = http.get(request_url, headers={"Api-Auth": "Bearer d2726b6c8c655e42b68b0db26131b15b22bd1a32"})
         document = http.json(res, schema=_documents_schema)
 
         stream_request_url = document["mainVideoContent"]["http://zdf.de/rels/target"]["http://zdf.de/rels/streams/ptmd"]
@@ -126,5 +126,6 @@ class zdf_mediathek(Plugin):
             streams.update(format_)
 
         return streams
+
 
 __plugin__ = zdf_mediathek

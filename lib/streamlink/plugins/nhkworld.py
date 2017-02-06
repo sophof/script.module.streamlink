@@ -8,9 +8,9 @@ from streamlink.stream import HLSStream
 
 API_URL = "http://{}.nhk.or.jp/nhkworld/app/tv/hlslive_web.xml"
 
-_url_re = re.compile("http(?:s)?://(?:(\w+)\.)?nhk.or.jp/nhkworld")
+_url_re = re.compile(r"http(?:s)?://(?:(\w+)\.)?nhk.or.jp/nhkworld")
 _schema = validate.Schema(
-        validate.xml_findtext("./main_url/wstrm")
+    validate.xml_findtext("./main_url/wstrm")
 )
 
 

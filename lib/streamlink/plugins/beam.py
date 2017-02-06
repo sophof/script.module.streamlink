@@ -4,7 +4,7 @@ from streamlink.plugin import Plugin
 from streamlink.plugin.api import http, validate
 from streamlink.stream import RTMPStream
 
-_url_re = re.compile("http(s)?://(\w+.)?beam.pro/(?P<channel>[^/]+)")
+_url_re = re.compile(r"http(s)?://(\w+.)?beam.pro/(?P<channel>[^/]+)")
 
 CHANNEL_INFO = "https://beam.pro/api/v1/channels/{0}"
 CHANNEL_MANIFEST = "https://beam.pro/api/v1/channels/{0}/manifest.smil"
@@ -35,6 +35,7 @@ _assets_schema = validate.Schema(
     })
 )
 
+
 class Beam(Plugin):
     @classmethod
     def can_handle_url(self, url):
@@ -54,11 +55,12 @@ class Beam(Plugin):
         streams = {}
         for video in assets["videos"]:
             name = "{0}p".format(video["height"])
-            stream = RTMPStream(self.session,{
-                "rtmp"     : "{0}/{1}".format(assets["base"], video["src"])
+            stream = RTMPStream(self.session, {
+                "rtmp": "{0}/{1}".format(assets["base"], video["src"])
             })
             streams[name] = stream
 
         return streams
+
 
 __plugin__ = Beam

@@ -6,7 +6,7 @@ from streamlink.plugin.api import http, validate
 from streamlink.plugin.api.utils import parse_json
 from streamlink.stream import AkamaiHDStream, HLSStream
 
-_url_re = re.compile("http(s)?://(www\.)?livestream.com/")
+_url_re = re.compile(r"http(s)?://(www\.)?livestream.com/")
 _stream_config_schema = validate.Schema({
     "event": {
         "stream_info": validate.any({
@@ -99,7 +99,10 @@ class Livestream(Plugin):
             swf_url = info.get("playerUri") or info.get("hdPlayerSwfUrl") or info.get("lsPlayerSwfUrl") or info.get("viewerPlusSwfUrl")
             if swf_url:
                 if not swf_url.startswith("http"):
-                    swf_url = "http://" + swf_url
+                    if swf_url.startswith("//"):
+                        swf_url = "http:" + swf_url
+                    else:
+                        swf_url = "http://" + swf_url
 
                 # Work around broken SSL.
                 swf_url = swf_url.replace("https://", "http://")
@@ -120,5 +123,6 @@ class Livestream(Plugin):
             # TODO: Replace with "yield from" when dropping Python 2.
             for stream in streams.items():
                 yield stream
+
 
 __plugin__ = Livestream

@@ -18,11 +18,11 @@ QUALITY_WEIGHTS = {
     "low": 1
 }
 
-_url_re = re.compile("""
+_url_re = re.compile(r"""
     http(s)?://(\w+\.)?gaminglive\.tv
     /(?P<type>channels|videos)/(?P<name>[^/]+)
 """, re.VERBOSE)
-_quality_re = re.compile("[^/]+-(?P<quality>[^/]+)")
+_quality_re = re.compile(r"[^/]+-(?P<quality>[^/]+)")
 
 _channel_schema = validate.Schema(
     {
@@ -44,6 +44,7 @@ _vod_schema = validate.Schema(
         "created_at": validate.transform(int)
     },
 )
+
 
 class GamingLive(Plugin):
     @classmethod
@@ -67,12 +68,12 @@ class GamingLive(Plugin):
 
     def _create_rtmp_stream(self, rtmp, playpath, live):
         return RTMPStream(self.session, {
-                    "rtmp": rtmp,
-                    "playpath": playpath,
-                    "pageUrl": self.url,
-                    "swfVfy": SWF_URL,
-                    "live": live
-                })
+            "rtmp": rtmp,
+            "playpath": playpath,
+            "pageUrl": self.url,
+            "swfVfy": SWF_URL,
+            "live": live
+        })
 
     def _get_live_streams(self, name):
         res = http.get(API_URL.format("channels", name))
@@ -105,5 +106,6 @@ class GamingLive(Plugin):
             return self._get_live_streams(match.group("name"))
         elif type == "videos":
             return self._get_vod_streams(match.group("name"))
+
 
 __plugin__ = GamingLive

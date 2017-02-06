@@ -12,31 +12,31 @@ HD_URL_PATTERN = "http://pl{0}.live.panda.tv/live_panda/{1}_mid.flv"
 # I don't know ordinary-definition url pattern, sorry for ignore it.
 OD_URL_PATTERN = "http://pl{0}.live.panda.tv/live_panda/{1}_mid.flv"
 
-_url_re = re.compile("http(s)?://(\w+.)?panda.tv/(?P<channel>[^/&?]+)")
+_url_re = re.compile(r"http(s)?://(\w+.)?panda.tv/(?P<channel>[^/&?]+)")
 
 _room_schema = validate.Schema(
-        {
-            "data": validate.any(
-                validate.text,
-                dict,
-                {
-                    "videoinfo": validate.any(
-                        validate.text,
-                        {
-                            "room_key": validate.text,
-                            "plflag": validate.text,
-                            "status": validate.text,
-                            "stream_addr": {
-                                "HD": validate.text,
-                                "OD": validate.text,
-                                "SD": validate.text
-                            }
+    {
+        "data": validate.any(
+            validate.text,
+            dict,
+            {
+                "videoinfo": validate.any(
+                    validate.text,
+                    {
+                        "room_key": validate.text,
+                        "plflag": validate.text,
+                        "status": validate.text,
+                        "stream_addr": {
+                            "HD": validate.text,
+                            "OD": validate.text,
+                            "SD": validate.text
                         }
-                    )
-                }
-            )
-        },
-        validate.get("data"))
+                    }
+                )
+            }
+        )
+    },
+    validate.get("data"))
 
 
 class pandatv(Plugin):
@@ -54,20 +54,20 @@ class pandatv(Plugin):
         if not isinstance(data, dict):
             self.logger.error("Please Check PandaTV Room API")
             return
-    
+
         videoinfo = data.get('videoinfo')
 
         if not videoinfo or not videoinfo.get('status'):
             self.logger.error("Please Check PandaTV Room API")
             return
-    
+
         if videoinfo.get('status') != '2':
             self.logger.info("Channel offline now!")
             return
 
         streams = {}
         plflag = videoinfo.get('plflag')
-        if not plflag or not '_' in plflag:
+        if plflag or not '_' not in plflag:
             self.logger.error("Please Check PandaTV Room API")
             return
         plflag = plflag.split('_')[1]
@@ -76,7 +76,7 @@ class pandatv(Plugin):
         # SD(Super high Definition) has higher quality than HD(High Definition) which
         # conflict with existing code, use ehq and hq instead.
         stream_addr = videoinfo.get('stream_addr')
-    
+
         if stream_addr and stream_addr.get('SD') == '1':
             streams['ehq'] = HTTPStream(self.session, SD_URL_PATTERN.format(plflag, room_key))
 
@@ -85,5 +85,5 @@ class pandatv(Plugin):
 
         return streams
 
-__plugin__ = pandatv
 
+__plugin__ = pandatv

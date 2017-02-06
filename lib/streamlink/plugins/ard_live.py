@@ -18,7 +18,7 @@ STREAMING_TYPES = {
     )
 }
 
-_url_re = re.compile("http(s)?://live.daserste.de/(?P<channel>[^/?]+)?")
+_url_re = re.compile(r"http(s)?://live.daserste.de/(?P<channel>[^/?]+)?")
 
 _livestream_schema = validate.Schema(
     validate.xml_findall("video/*"),
@@ -26,6 +26,7 @@ _livestream_schema = validate.Schema(
     validate.map(lambda e: (STREAMING_TYPES.get(e.tag), e.text)),
     validate.transform(dict),
 )
+
 
 class ard_live(Plugin):
     @classmethod
@@ -46,5 +47,6 @@ class ard_live(Plugin):
                 self.logger.warning("Unable to extract {0} streams: {1}", name, err)
 
         return streams
+
 
 __plugin__ = ard_live

@@ -24,12 +24,12 @@ QUALITY_MAP = {
 }
 STREAM_INFO_URL = "http://www.dailymotion.com/sequence/full/{0}"
 
-_rtmp_re = re.compile("""
+_rtmp_re = re.compile(r"""
     (?P<host>rtmp://[^/]+)
     /(?P<app>[^/]+)
     /(?P<playpath>.+)
 """, re.VERBOSE)
-_url_re = re.compile("""
+_url_re = re.compile(r"""
     http(s)?://(\w+\.)?
     dailymotion.com
     (/embed)?/(video|live)
@@ -149,7 +149,7 @@ class DailyMotion(Plugin):
         url_template = "{0}://{1}{2}".format(
             parsed.scheme, parsed.netloc, playlist["template"]
         )
-        segment_max = reduce(lambda i,j: i + j[0], playlist["fragments"], 0)
+        segment_max = reduce(lambda i, j: i + j[0], playlist["fragments"], 0)
 
         substreams = [HTTPStream(self.session,
                                  url_template.replace("$fragment$", str(i)))
@@ -196,5 +196,6 @@ class DailyMotion(Plugin):
         media_id = match.group("media_id")
 
         return self._get_streams_from_media(media_id)
+
 
 __plugin__ = DailyMotion

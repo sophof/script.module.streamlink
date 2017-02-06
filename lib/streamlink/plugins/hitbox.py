@@ -15,8 +15,8 @@ SWF_BASE = "http://edge.vie.hitbox.tv/static/player/flowplayer/"
 SWF_URL = SWF_BASE + "flowplayer.commercial-3.2.16.swf"
 VOD_BASE_URL = "http://www.hitbox.tv/"
 
-_quality_re = re.compile("(\d+p)$")
-_url_re = re.compile("""
+_quality_re = re.compile(r"(\d+p)$")
+_url_re = re.compile(r"""
     http(s)?://(www\.)?hitbox.tv
     /(?P<channel>[^/]+)
     (?:
@@ -190,5 +190,6 @@ class Hitbox(Plugin):
             return self._get_live_streams(player)
         else:
             return self._get_video_streams(player)
+
 
 __plugin__ = Hitbox
